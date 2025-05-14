@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="https://unpkg.com/frappe-gantt/dist/frappe-gantt.css">
+  </head>
+  <body>
+    <div id="timeline"></div>
+    <script src="https://unpkg.com/frappe-gantt/dist/frappe-gantt.js"></script>
+    <script>
+      const tasks = [
+        {
+          id: '1',
+          name: 'Case 1',
+          start: '2025-05-14T00:00:00',
+          end:   '2025-05-14T00:52:42', // 52.7 min
+          custom: { cleaningEnd: '2025-05-14T01:07:42' }
+        },
+        // … more cases …
+      ];
+
+      const gantt = new Gantt('#timeline', tasks, {
+        on_progress_click: (task) => { /* … */ },
+        custom_popup_html: task => {
+          return `
+            <div class="details-container">
+              <h5>${task.name}</h5>
+              <p>Estimated start: ${task.start}</p>
+              <p>Actual start: ${task.custom.actual_start}</p>
+              <p>Duration: ${task.duration} min</p>
+            </div>`;
+        }
+      });
+
+      // Simple “play” animation:
+      let t=0;
+      function step() {
+        gantt.change_view_mode('Minute');
+        gantt.set_scroll(task => {
+          // scroll logic to show time t
+        });
+        if (t < 300) { t++; setTimeout(step, 200); }
+      }
+      step();
+    </script>
+  </body>
+</html>
+

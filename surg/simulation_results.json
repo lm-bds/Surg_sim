@@ -1,0 +1,43 @@
+{
+  "reps": [
+    {
+      "records": [
+        {
+          "actual_start": 0.0,
+          "duration": 52.737422102814726,
+          "end_time": 52.737422102814726,
+          "delay": 0.0,
+          "estimated_start": 0.0
+        },
+        {
+          "actual_start": 70.0,
+          "duration": 60.8745831933673,
+          "end_time": 130.8745831933673,
+          "delay": 0.0,
+          "estimated_start": 70.0
+        },
+        {
+          "actual_start": 145.8745831933673,
+          "duration": 28.434409410692453,
+          "end_time": 174.30899260405977,
+          "delay": 25.8745831933673,
+          "estimated_start": 120.0
+        },
+        {
+          "actual_start": 189.30899260405977,
+          "duration": 57.89294817655474,
+          "end_time": 247.2019407806145,
+          "delay": 9.308992604059767,
+          "estimated_start": 180.0
+        },
+        {
+          "actual_start": 262.2019407806145,
+          "duration": 14.489392360492683,
+          "end_time": 276.6913331411072,
+          "delay": 22.201940780614507,
+          "estimated_start": 240.0
+        }
+      ]
+    }
+  ]
+}
