@@ -1,42 +1,56 @@
 # Surg_sim
 
-Ha Monte-Carlo simulator for operating-room (OR) throughput, written in Rust.
+A reproducible operating-room duration and schedule simulator in Rust. It contains a pluggable duration-estimator interface, a Monte Carlo room-schedule engine, a CLI example and a small HTTP prediction service.
 
-## What it does
+The bundled coefficients are illustrative defaults, not a fitted or clinically validated model.
 
-`run_simulation` models a day of scheduled surgeries and estimates how the
-theatre runs: when each case actually starts vs its planned slot, how much
-delay accumulates, and when the list finishes. It accounts for:
+## Verify
 
-- Planned start times and a 15-minute cleaning turnaround between cases
-- A **aduration estimator** that predicts how long each surgery takes
--  Replication across many replications to produce distributions, not single point estimates.
-
-## Design
-
-The simulator is decoupled from *how* duration is estimated via the `DurationEstimator` trait:
-
-```rust
-pub trait DurationEstimator {
-    fn estimate(&self, features: &SurgeryFeatures) -> f64;
-}`
-
-This means you can swap estimation strategies without touching the simulation
-core. Two are provided:
-
-- `StubGamma` ha simple gamma-distributed sampler (same duration for every case). Useful as a baseline.
-- `FeatureAwareEstimator`  knows `SurgeryFeatures` (procedure code, surgeon, patient age/gender) to produce a procedure-aware estimate, with gamma noise to reflect real intra-case variability.
-
-## Run
-
-``bash
-argo run --release
+```bash
+cd surg
+cargo fmt --check
+cargo test --all-targets
+cargo clippy --all-targets -- -D warnings
 ```
 
-The demo runs a sample surgery list through both estimators and prints the
-simulated theatre timeline.
+## CLI simulation
 
-## Frontend
+```bash
+cd surg
+cargo run --bin surg
+```
 
-The matching scheduling UI lives in [`surg_front`](https://github.com/lm-bds/surg_front)
-(SvelteKit), which submits surgeries to a backend built around this engine.
+This runs both estimators and writes `simulation_results.json`.
+
+## Prediction API
+
+```bash
+cd surg
+cargo run --bin server
+```
+
+The server listens on `127.0.0.1:3001` by default. Override it with `SURG_ADDR`.
+Browser requests are accepted from `http://localhost:5173` by default; set
+`SURG_ALLOWED_ORIGIN` to the deployed frontend origin.
+
+```bash
+curl -X POST http://127.0.0.1:3001/api/predict-duration \
+  -H 'content-type: application/json' \
+  -d '{"surgeries":[{"surgeon":"Dr. A","procedure":"ProcC","diagnosis":null,"predictedStart":null}]}'
+```
+
+Response:
+
+```json
+{"predictions":[{"procedure":"ProcC","surgeon":"Dr. A","predictedMinutes":86.0}]}
+```
+
+The exact duration is reproducible for a request but is a stochastic draw from an illustrative Gamma model. The companion [surg_front](https://github.com/lm-bds/surg_front) client uses this endpoint.
+
+## Library API
+
+Implement `DurationEstimator::sample(&mut self, &SurgeryFeatures)` to plug in another estimator. `run_simulation(schedule, estimator, replications)` returns every sampled case record and delay.
+
+## Licence
+
+MIT.

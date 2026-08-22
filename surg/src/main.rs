@@ -1,11 +1,9 @@
 // src/main.rs
 
-mod estimator;
-mod simulator;
 use std::fs;
 
-use estimator::{FeatureAwareEstimator, Gender, StubGamma, SurgeryFeatures};
-use simulator::{run_simulation, SimulationResults};
+use surg::estimator::{FeatureAwareEstimator, Gender, StubGamma, SurgeryFeatures};
+use surg::simulator::{run_simulation, SimulationResults};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 1. Define today's schedule with *estimated* start times (in minutes)

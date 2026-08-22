@@ -1,5 +1,5 @@
 use rand::rngs::StdRng;
-use rand::{Rng, SeedableRng};
+use rand::SeedableRng;
 use rand_distr::{Distribution, Gamma};
 use std::collections::HashMap;
 
@@ -125,8 +125,14 @@ impl FeatureAwareEstimator {
     /// Deterministic mean duration (minutes) for a given case.
     fn mean_duration(&self, features: &SurgeryFeatures) -> f64 {
         let mut mean = self.intercept + self.age_coef * (features.patient_age as f64);
-        mean += *self.gender_coef.get(&features.patient_gender).unwrap_or(&0.0);
-        mean += *self.procedure_coef.get(&features.procedure_code).unwrap_or(&0.0);
+        mean += *self
+            .gender_coef
+            .get(&features.patient_gender)
+            .unwrap_or(&0.0);
+        mean += *self
+            .procedure_coef
+            .get(&features.procedure_code)
+            .unwrap_or(&0.0);
         mean += *self.surgeon_coef.get(&features.surgeon_id).unwrap_or(&0.0);
         // Floor the mean so the Gamma scale stays positive.
         mean.max(5.0)
@@ -173,14 +179,19 @@ mod tests {
 
     #[test]
     fn feature_aware_uses_procedure_not_just_noise() {
-        let mut est = FeatureAwareEstimator::new(42);
+        let est = FeatureAwareEstimator::new(42);
         // Same seed, same patient demographics, different procedures.
         let a = case("ProcA", "Dr. B", 50, Gender::Female); // -20 min offset
         let e = case("ProcE", "Dr. B", 50, Gender::Female); // +75 min offset
-        // Mean should be strictly greater for the longer procedure.
+                                                            // Mean should be strictly greater for the longer procedure.
         let mean_a = est.mean_duration(&a);
         let mean_e = est.mean_duration(&e);
-        assert!(mean_e > mean_a + 50.0, "expected ProcE mean >> ProcA mean ({} vs {})", mean_e, mean_a);
+        assert!(
+            mean_e > mean_a + 50.0,
+            "expected ProcE mean >> ProcA mean ({} vs {})",
+            mean_e,
+            mean_a
+        );
     }
 
     #[test]
@@ -188,8 +199,11 @@ mod tests {
         let est = FeatureAwareEstimator::new(7);
         let known = case("ProcC", "Dr. A", 60, Gender::Male);
         let unknown = case("ZZZ999", "Dr. Nobody", 60, Gender::Male);
-        // Only the procedure/surgeon offsets differ; both unknown here -> equal mean.
-        assert_eq!(est.mean_duration(&known), est.mean_duration(&unknown) + (-20.0) + (-10.0) + 5.0);
+        // ProcC contributes +25 minutes and Dr. A contributes -10 minutes.
+        assert_eq!(
+            est.mean_duration(&known),
+            est.mean_duration(&unknown) + 15.0
+        );
     }
 
     #[test]

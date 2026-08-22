@@ -1,0 +1,23 @@
+name: Rust
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: surg
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: surg
+      - run: cargo fmt --check
+      - run: cargo test --all-targets
+      - run: cargo clippy --all-targets -- -D warnings

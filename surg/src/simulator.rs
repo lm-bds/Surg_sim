@@ -40,6 +40,12 @@ impl SimulationResults {
     }
 }
 
+impl Default for SimulationResults {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 /// Run the day’s schedule `num_replications` times
 pub fn run_simulation<E: DurationEstimator>(
     schedule: Vec<SurgeryFeatures>,
